@@ -26,12 +26,10 @@ fn main() {
 
 fn get_nth_fibonacci_naive(n: u8) -> Result<u128, &'static str> {
     fn get_nth_fibonacci_naive_helper(n: u8) -> u128 {
-        if n == 0 {
-            0
-        } else if n == 1 || n == 2 {
-            1
-        } else {
-            get_nth_fibonacci_naive_helper(n - 1) + get_nth_fibonacci_naive_helper(n - 2)
+        match n {
+            0 => 0,
+            1 => 1,
+            n => get_nth_fibonacci_naive_helper(n - 1) + get_nth_fibonacci_naive_helper(n - 2),
         }
     }
 
@@ -61,10 +59,9 @@ fn get_nth_fibonacci_loop(n: u8) -> Result<u128, &'static str> {
 
 fn get_nth_fibonacci_tail_call(n: u8) -> Result<u128, &'static str> {
     fn get_nth_fibonacci_tail_call_helper(n: u8, a: u128, b: u128) -> u128 {
-        if n == 0 {
-            a
-        } else {
-            get_nth_fibonacci_tail_call_helper(n - 1, b, a + b)
+        match n {
+            0 => a,
+            n => get_nth_fibonacci_tail_call_helper(n - 1, b, a + b),
         }
     }
 
@@ -77,35 +74,33 @@ fn get_nth_fibonacci_tail_call(n: u8) -> Result<u128, &'static str> {
 
 fn get_nth_fibonacci_dynamic(n: u8) -> Result<u128, &'static str> {
     fn get_nth_fibonacci_dynamic_helper(fibonacci_cache: &mut HashMap<u8, u128>, n: u8) -> u128 {
-        if n == 0 {
-            return 0;
-        }
+        match n {
+            0 => 0,
+            1 => 1,
+            n => {
+                let fibo_n_minus_1 = match fibonacci_cache.get(&(n - 1)) {
+                    Some(val) => *val,
+                    None => {
+                        let val = get_nth_fibonacci_dynamic_helper(fibonacci_cache, n - 1);
+                        fibonacci_cache.insert(n - 1, val);
 
-        if n == 1 || n == 2 {
-            return 1;
-        }
+                        val
+                    }
+                };
 
-        let fibo_n_minus_1 = match fibonacci_cache.get(&(n - 1)) {
-            Some(val) => *val,
-            None => {
-                let val = get_nth_fibonacci_dynamic_helper(fibonacci_cache, n - 1);
-                fibonacci_cache.insert(n - 1, val);
+                let fibo_n_minus_2 = match fibonacci_cache.get(&(n - 2)) {
+                    Some(val) => *val,
+                    None => {
+                        let val = get_nth_fibonacci_dynamic_helper(fibonacci_cache, n - 2);
+                        fibonacci_cache.insert(n - 2, val);
 
-                val
+                        val
+                    }
+                };
+
+                fibo_n_minus_1 + fibo_n_minus_2
             }
-        };
-
-        let fibo_n_minus_2 = match fibonacci_cache.get(&(n - 2)) {
-            Some(val) => *val,
-            None => {
-                let val = get_nth_fibonacci_dynamic_helper(fibonacci_cache, n - 2);
-                fibonacci_cache.insert(n - 2, val);
-
-                val
-            }
-        };
-
-        fibo_n_minus_1 + fibo_n_minus_2
+        }
     }
 
     let mut fibonacci_cache = HashMap::new();
