@@ -1,6 +1,8 @@
 use core::ops::Range;
 use std::collections::HashMap;
 
+const FIBO_INDEX_MAX: u8 = 185;
+
 fn main() {
     const FIBO_RANGE: Range<u8> = 0..200;
 
@@ -25,6 +27,8 @@ fn main() {
 }
 
 fn get_nth_fibonacci_naive(n: u8) -> Result<u128, &'static str> {
+    const FIBO_NAIVE_INDEX_MAX: u8 = 40;
+
     fn get_nth_fibonacci_naive_helper(n: u8) -> u128 {
         match n {
             0 => 0,
@@ -33,17 +37,19 @@ fn get_nth_fibonacci_naive(n: u8) -> Result<u128, &'static str> {
         }
     }
 
-    if n > 185 {
-        Err("Overflow")
-    } else if n > 42 {
-        Err("Too slow to calculate")
-    } else {
-        Ok(get_nth_fibonacci_naive_helper(n))
+    if n > FIBO_INDEX_MAX {
+        return Err("Overflow");
     }
+
+    if n > FIBO_NAIVE_INDEX_MAX {
+        return Err("Too slow to calculate");
+    }
+
+    Ok(get_nth_fibonacci_naive_helper(n))
 }
 
 fn get_nth_fibonacci_loop(n: u8) -> Result<u128, &'static str> {
-    if n > 185 {
+    if n > FIBO_INDEX_MAX {
         return Err("Overflow");
     }
 
@@ -65,11 +71,11 @@ fn get_nth_fibonacci_tail_call(n: u8) -> Result<u128, &'static str> {
         }
     }
 
-    if n > 185 {
-        Err("Overflow")
-    } else {
-        Ok(get_nth_fibonacci_tail_call_helper(n, 0, 1))
+    if n > FIBO_INDEX_MAX {
+        return Err("Overflow");
     }
+
+    Ok(get_nth_fibonacci_tail_call_helper(n, 0, 1))
 }
 
 fn get_nth_fibonacci_dynamic(n: u8) -> Result<u128, &'static str> {
@@ -78,8 +84,8 @@ fn get_nth_fibonacci_dynamic(n: u8) -> Result<u128, &'static str> {
             0 => 0,
             1 => 1,
             n => {
-                let fibo_n_minus_1 = match fibonacci_cache.get(&(n - 1)) {
-                    Some(val) => *val,
+                let fibo_n_minus_1 = match fibonacci_cache.get(&(n - 1)).copied() {
+                    Some(val) => val,
                     None => {
                         let val = get_nth_fibonacci_dynamic_helper(fibonacci_cache, n - 1);
                         fibonacci_cache.insert(n - 1, val);
@@ -88,8 +94,8 @@ fn get_nth_fibonacci_dynamic(n: u8) -> Result<u128, &'static str> {
                     }
                 };
 
-                let fibo_n_minus_2 = match fibonacci_cache.get(&(n - 2)) {
-                    Some(val) => *val,
+                let fibo_n_minus_2 = match fibonacci_cache.get(&(n - 2)).copied() {
+                    Some(val) => val,
                     None => {
                         let val = get_nth_fibonacci_dynamic_helper(fibonacci_cache, n - 2);
                         fibonacci_cache.insert(n - 2, val);
@@ -105,9 +111,9 @@ fn get_nth_fibonacci_dynamic(n: u8) -> Result<u128, &'static str> {
 
     let mut fibonacci_cache = HashMap::new();
 
-    if n > 185 {
-        Err("Overflow")
-    } else {
-        Ok(get_nth_fibonacci_dynamic_helper(&mut fibonacci_cache, n))
+    if n > FIBO_INDEX_MAX {
+        return Err("Overflow");
     }
+
+    Ok(get_nth_fibonacci_dynamic_helper(&mut fibonacci_cache, n))
 }
